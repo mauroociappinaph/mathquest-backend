@@ -32,12 +32,13 @@ let GameService = class GameService {
     async submitAnswer(submitAnswerDto) {
         const { child_id, table, multiplicator, answer } = submitAnswerDto;
         const isCorrect = answer === table * multiplicator;
-        const { data: child, error: childError } = await this.supabaseService
+        const { data, error: childError } = await this.supabaseService
             .getClient()
             .from('profiles')
             .select('full_name, parent_id')
             .eq('id', child_id)
             .single();
+        const child = data;
         if (childError)
             throw new common_1.BadRequestException('Niño no encontrado');
         const feedbackText = await this.aiProvider.generateFeedback(child.full_name, isCorrect, table, multiplicator, answer);

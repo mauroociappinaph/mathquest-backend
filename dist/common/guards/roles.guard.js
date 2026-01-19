@@ -26,8 +26,8 @@ let RolesGuard = class RolesGuard {
         if (!requiredRoles) {
             return true;
         }
-        const { user } = context.switchToHttp().getRequest();
-        const userRole = user?.user_metadata?.role;
+        const request = context.switchToHttp().getRequest();
+        const userRole = request.user?.user_metadata?.role;
         if (!userRole) {
             return false;
         }

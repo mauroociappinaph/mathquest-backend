@@ -5,6 +5,11 @@ import { AUDIO_PROVIDER, AudioProvider } from '../audio/interfaces/audio-provide
 import { ProgressService } from './progress.service';
 import { SubmitAnswerDto } from './dto';
 
+interface ChildWithParent {
+  full_name: string;
+  parent_id: string;
+}
+
 @Injectable()
 export class GameService {
   constructor(
@@ -19,12 +24,14 @@ export class GameService {
     const isCorrect = answer === table * multiplicator;
 
     // 1. Obtener datos del niño y padre
-    const { data: child, error: childError } = await this.supabaseService
+    const { data, error: childError } = await this.supabaseService
       .getClient()
       .from('profiles')
       .select('full_name, parent_id')
       .eq('id', child_id)
       .single();
+
+    const child = data as ChildWithParent;
 
     if (childError) throw new BadRequestException('Niño no encontrado');
 

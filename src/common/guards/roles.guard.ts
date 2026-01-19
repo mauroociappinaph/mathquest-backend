@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+import { RequestWithUser } from '../interfaces/request-with-user.interface';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -16,9 +17,8 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
-    // En Supabase, el rol está en user_metadata['role'] (configurado via trigger en schema.sql)
-    const userRole = user?.user_metadata?.role;
+    const request = context.switchToHttp().getRequest<RequestWithUser>();
+    const userRole = request.user?.user_metadata?.role as string;
 
     if (!userRole) {
       return false;

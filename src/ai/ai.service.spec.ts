@@ -7,7 +7,6 @@ jest.mock('openai');
 
 describe('AiService', () => {
   let service: AiService;
-  let configService: ConfigService;
 
   const mockOpenAI = {
     chat: {
@@ -18,7 +17,7 @@ describe('AiService', () => {
   };
 
   beforeEach(async () => {
-    (OpenAI as any).mockImplementation(() => mockOpenAI);
+    jest.mocked(OpenAI).mockImplementation(() => mockOpenAI as any);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -33,7 +32,6 @@ describe('AiService', () => {
     }).compile();
 
     service = module.get<AiService>(AiService);
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {

@@ -27,7 +27,7 @@ let SupabaseAuthGuard = class SupabaseAuthGuard {
         if (error || !user) {
             throw new common_1.UnauthorizedException('Token inválido o expirado');
         }
-        request['user'] = user;
+        request.user = user;
         return true;
     }
     extractTokenFromHeader(request) {

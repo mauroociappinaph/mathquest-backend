@@ -1,20 +1,26 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
 
 @Injectable()
 export class AiService {
   private openai: OpenAI;
-  private anthropic: Anthropic;
   private readonly logger = new Logger(AiService.name);
+  private readonly defaultModel = 'mistralai/mistral-nemo';
 
   constructor(private configService: ConfigService) {
-    const openaiKey = this.configService.get<string>('OPENAI_API_KEY');
-    const anthropicKey = this.configService.get<string>('CLAUDE_API_KEY');
+    const openRouterKey = this.configService.get<string>('OPENROUTER_API_KEY');
 
-    if (openaiKey) this.openai = new OpenAI({ apiKey: openaiKey });
-    if (anthropicKey) this.anthropic = new Anthropic({ apiKey: anthropicKey });
+    if (openRouterKey) {
+      this.openai = new OpenAI({
+        apiKey: openRouterKey,
+        baseURL: 'https://openrouter.ai/api/v1',
+        defaultHeaders: {
+          'HTTP-Referer': 'https://mathquest-backend.dev',
+          'X-Title': 'MathQuest Backend',
+        },
+      });
+    }
   }
 
   async generateFeedback(
@@ -36,22 +42,19 @@ export class AiService {
     try {
       if (this.openai) {
         const response = await this.openai.chat.completions.create({
-          model: 'gpt-4o-mini',
+          model: this.defaultModel,
           messages: [{ role: 'user', content: prompt }],
           max_tokens: 100,
         });
-        return response.choices[0].message.content || (isCorrect ? '¡Excelente!' : '¡Sigue así!');
-      } else if (this.anthropic) {
-        const response = await this.anthropic.messages.create({
-          model: 'claude-3-haiku-20240307',
-          max_tokens: 100,
-          messages: [{ role: 'user', content: prompt }],
-        });
-        return (response.content[0] as any).text;
+
+        return (
+          response.choices[0]?.message?.content?.trim() ||
+          (isCorrect ? '¡Excelente trabajo!' : '¡Sigue practicando!')
+        );
       }
       return isCorrect ? '¡Excelente trabajo! ¡Sigue así!' : '¡Casi lo logras! ¡Sigue practicando!';
     } catch (error) {
-      this.logger.error('Error al generar feedback de IA', error);
+      this.logger.error('Error al generar feedback con OpenRouter', error);
       return isCorrect ? '¡Muy bien!' : '¡Sigue intentando!';
     }
   }

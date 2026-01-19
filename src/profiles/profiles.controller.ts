@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express';
 import { RequestWithUser } from '../common/interfaces/request-with-user.interface';
 import { ProfilesService } from './profiles.service';
 import { CreateChildProfileDto } from './dto/create-child-profile.dto';
@@ -25,7 +24,10 @@ export class ProfilesController {
   @Post('children')
   @ApiOperation({ summary: 'Crear un perfil de niño' })
   @Roles('parent', 'admin')
-  createChild(@Req() req: RequestWithUser, @Body() createChildDto: CreateChildProfileDto) {
+  createChild(
+    @Req() req: RequestWithUser,
+    @Body() createChildDto: CreateChildProfileDto,
+  ) {
     return this.profilesService.createChild(req.user.id, createChildDto);
   }
 

@@ -19,7 +19,7 @@ exports.ProfilesModule = ProfilesModule = __decorate([
         imports: [supabase_module_1.SupabaseModule],
         controllers: [profiles_controller_1.ProfilesController],
         providers: [profiles_service_1.ProfilesService],
-        exports: [profiles_service_1.ProfilesService]
+        exports: [profiles_service_1.ProfilesService],
     })
 ], ProfilesModule);
 //# sourceMappingURL=profiles.module.js.map

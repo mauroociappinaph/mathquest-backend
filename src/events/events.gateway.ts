@@ -27,12 +27,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // Permite a los clientes unirse a su propia sala
-  joinRoom(client: Socket, parentId: string) {
-    client.join(`parent_${parentId}`);
+  async joinRoom(client: Socket, parentId: string) {
+    await client.join(`parent_${parentId}`);
   }
 
   @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
+  handleMessage(): string {
     return 'Hello world!';
   }
 }

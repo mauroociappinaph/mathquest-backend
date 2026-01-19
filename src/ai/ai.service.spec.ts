@@ -17,7 +17,7 @@ describe('AiService', () => {
   };
 
   beforeEach(async () => {
-    jest.mocked(OpenAI).mockImplementation(() => mockOpenAI as any);
+    jest.mocked(OpenAI).mockImplementation(() => mockOpenAI as unknown as OpenAI);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -25,7 +25,10 @@ describe('AiService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn().mockReturnValue('mock-api-key'),
+            get: jest.fn((key: string): string | undefined => {
+              if (key === 'OPENROUTER_API_KEY') return 'fake-key';
+              return undefined;
+            }),
           },
         },
       ],
@@ -51,7 +54,9 @@ describe('AiService', () => {
   });
 
   it('should return fallback message on error', async () => {
-    mockOpenAI.chat.completions.create.mockRejectedValue(new Error('API Error'));
+    mockOpenAI.chat.completions.create.mockRejectedValue(
+      new Error('API Error'),
+    );
 
     const result = await service.generateFeedback('Mauro', false, 5, 5, 10);
 

@@ -10,8 +10,10 @@ export abstract class BaseSupabaseService {
     return this.supabaseService.getClient();
   }
 
-  protected handleError(error: any, message: string) {
-    this.logger.error(`${message}: ${error.message || error}`, error.stack);
+  protected handleError(error: unknown, message: string) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : '';
+    this.logger.error(`${message}: ${errorMessage}`, errorStack);
     throw error;
   }
 }

@@ -21,7 +21,9 @@ async function bootstrap() {
   // Configuración de Swagger
   const config = new DocumentBuilder()
     .setTitle('MathQuest API')
-    .setDescription('Documentación de la API para el sistema educativo MathQuest')
+    .setDescription(
+      'Documentación de la API para el sistema educativo MathQuest',
+    )
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();

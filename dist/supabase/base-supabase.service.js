@@ -10,7 +10,9 @@ class BaseSupabaseService {
         return this.supabaseService.getClient();
     }
     handleError(error, message) {
-        this.logger.error(`${message}: ${error.message || error}`, error.stack);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : '';
+        this.logger.error(`${message}: ${errorMessage}`, errorStack);
         throw error;
     }
 }

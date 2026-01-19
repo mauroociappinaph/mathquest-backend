@@ -1,7 +1,13 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { AI_PROVIDER, AiProvider } from '../ai/interfaces/ai-provider.interface';
-import { AUDIO_PROVIDER, AudioProvider } from '../audio/interfaces/audio-provider.interface';
+import {
+  AI_PROVIDER,
+  AiProvider,
+} from '../ai/interfaces/ai-provider.interface';
+import {
+  AUDIO_PROVIDER,
+  AudioProvider,
+} from '../audio/interfaces/audio-provider.interface';
 import { ProgressService } from './progress.service';
 import { SubmitAnswerDto } from './dto';
 

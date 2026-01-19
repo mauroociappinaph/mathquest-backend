@@ -8,6 +8,6 @@ import { SupabaseModule } from '../supabase/supabase.module';
   imports: [SupabaseModule],
   controllers: [ProfilesController],
   providers: [ProfilesService],
-  exports: [ProfilesService]
+  exports: [ProfilesService],
 })
 export class ProfilesModule {}

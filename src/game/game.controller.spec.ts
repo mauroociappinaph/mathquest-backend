@@ -16,9 +16,9 @@ describe('GameController', () => {
         },
       ],
     })
-    .overrideGuard(SupabaseAuthGuard)
-    .useValue({ canActivate: () => true })
-    .compile();
+      .overrideGuard(SupabaseAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<GameController>(GameController);
   });

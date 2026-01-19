@@ -23,11 +23,14 @@ let ProgressService = ProgressService_1 = class ProgressService extends base_sup
         this.eventsGateway = eventsGateway;
     }
     async updateProgress(childId, table, multiplicator, childName, parentId) {
-        const { data: tableData } = await this.client
+        const { data, error: tableError } = await this.client
             .from('multiplication_tables')
             .select('id')
             .eq('number', table)
             .single();
+        if (tableError)
+            return;
+        const tableData = data;
         if (tableData) {
             await this.client.rpc('increment_progress', {
                 p_child_id: childId,

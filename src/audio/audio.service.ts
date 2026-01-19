@@ -16,7 +16,9 @@ export class AudioService implements AudioProvider {
     const voiceId = '21m00Tcm4TlvDq8ikWAM'; // Rachel voice - Personalizable
 
     if (!apiKey) {
-      this.logger.warn('ElevenLabs API Key no configurada, devolviendo buffer vacío');
+      this.logger.warn(
+        'ElevenLabs API Key no configurada, devolviendo buffer vacío',
+      );
       return Buffer.alloc(0);
     }
 

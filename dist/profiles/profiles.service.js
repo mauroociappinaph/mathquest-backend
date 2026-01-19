@@ -20,18 +20,19 @@ let ProfilesService = ProfilesService_1 = class ProfilesService extends base_sup
         super(supabaseService);
     }
     async getParentProfile(userId) {
-        const { data, error } = await this.client
+        const response = await this.client
             .from('profiles')
             .select('*')
             .eq('uid', userId)
             .single();
+        const { data, error } = response;
         if (error)
             throw new common_1.BadRequestException('Error al obtener perfil del padre');
         return data;
     }
     async createChild(parentUid, createChildDto) {
         const parentProfile = await this.getParentProfile(parentUid);
-        const { data, error } = await this.client
+        const response = await this.client
             .from('profiles')
             .insert({
             full_name: createChildDto.full_name,
@@ -41,17 +42,19 @@ let ProfilesService = ProfilesService_1 = class ProfilesService extends base_sup
         })
             .select()
             .single();
+        const { data, error } = response;
         if (error)
             throw new common_1.BadRequestException('Error al crear perfil del niño');
         return data;
     }
     async getChildren(parentUid) {
         const parentProfile = await this.getParentProfile(parentUid);
-        const { data, error } = await this.client
+        const response = await this.client
             .from('profiles')
             .select('*')
             .eq('parent_id', parentProfile.id)
             .eq('role', 'child');
+        const { data, error } = response;
         if (error)
             throw new common_1.BadRequestException('Error al obtener perfiles de niños');
         return data;

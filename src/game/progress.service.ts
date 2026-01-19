@@ -3,6 +3,10 @@ import { BaseSupabaseService } from '../supabase/base-supabase.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { EventsGateway } from '../events/events.gateway';
 
+interface TableData {
+  id: string;
+}
+
 @Injectable()
 export class ProgressService extends BaseSupabaseService {
   protected readonly logger = new Logger(ProgressService.name);
@@ -14,12 +18,21 @@ export class ProgressService extends BaseSupabaseService {
     super(supabaseService);
   }
 
-  async updateProgress(childId: string, table: number, multiplicator: number, childName: string, parentId: string) {
-    const { data: tableData } = await this.client
+  async updateProgress(
+    childId: string,
+    table: number,
+    multiplicator: number,
+    childName: string,
+    parentId: string,
+  ) {
+    const { data, error: tableError } = await this.client
       .from('multiplication_tables')
       .select('id')
       .eq('number', table)
       .single();
+
+    if (tableError) return;
+    const tableData = data as TableData;
 
     if (tableData) {
       await this.client.rpc('increment_progress', {

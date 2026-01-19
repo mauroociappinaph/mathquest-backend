@@ -1,7 +1,17 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { BaseSupabaseService } from '../supabase/base-supabase.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { CreateChildProfileDto } from './dto';
+
+interface Profile {
+  id: string;
+  uid: string;
+  full_name: string;
+  avatar_url: string;
+  role: 'parent' | 'child' | 'admin';
+  parent_id?: string;
+}
 
 @Injectable()
 export class ProfilesService extends BaseSupabaseService {
@@ -12,13 +22,16 @@ export class ProfilesService extends BaseSupabaseService {
   }
 
   async getParentProfile(userId: string) {
-    const { data, error } = await this.client
+    const response = await this.client
       .from('profiles')
       .select('*')
       .eq('uid', userId)
       .single();
 
-    if (error) throw new BadRequestException('Error al obtener perfil del padre');
+    const { data, error } = response as PostgrestSingleResponse<Profile>;
+
+    if (error)
+      throw new BadRequestException('Error al obtener perfil del padre');
     return data;
   }
 
@@ -26,7 +39,7 @@ export class ProfilesService extends BaseSupabaseService {
     // Primero obtenemos el ID interno del perfil del padre
     const parentProfile = await this.getParentProfile(parentUid);
 
-    const { data, error } = await this.client
+    const response = await this.client
       .from('profiles')
       .insert({
         full_name: createChildDto.full_name,
@@ -37,6 +50,8 @@ export class ProfilesService extends BaseSupabaseService {
       .select()
       .single();
 
+    const { data, error } = response as PostgrestSingleResponse<Profile>;
+
     if (error) throw new BadRequestException('Error al crear perfil del niño');
     return data;
   }
@@ -44,13 +59,16 @@ export class ProfilesService extends BaseSupabaseService {
   async getChildren(parentUid: string) {
     const parentProfile = await this.getParentProfile(parentUid);
 
-    const { data, error } = await this.client
+    const response = await this.client
       .from('profiles')
       .select('*')
       .eq('parent_id', parentProfile.id)
       .eq('role', 'child');
 
-    if (error) throw new BadRequestException('Error al obtener perfiles de niños');
+    const { data, error } = response as PostgrestSingleResponse<Profile[]>;
+
+    if (error)
+      throw new BadRequestException('Error al obtener perfiles de niños');
     return data;
   }
 }

@@ -54,7 +54,9 @@ export class AiService implements AiProvider {
           (isCorrect ? '¡Excelente trabajo!' : '¡Sigue practicando!')
         );
       }
-      return isCorrect ? '¡Excelente trabajo! ¡Sigue así!' : '¡Casi lo logras! ¡Sigue practicando!';
+      return isCorrect
+        ? '¡Excelente trabajo! ¡Sigue así!'
+        : '¡Casi lo logras! ¡Sigue practicando!';
     } catch (error) {
       this.logger.error('Error al generar feedback con OpenRouter', error);
       return isCorrect ? '¡Muy bien!' : '¡Sigue intentando!';

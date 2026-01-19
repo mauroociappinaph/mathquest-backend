@@ -26,10 +26,10 @@ let EventsGateway = EventsGateway_1 = class EventsGateway {
     emitProgressUpdate(parentId, data) {
         this.server.to(`parent_${parentId}`).emit('progressUpdate', data);
     }
-    joinRoom(client, parentId) {
-        client.join(`parent_${parentId}`);
+    async joinRoom(client, parentId) {
+        await client.join(`parent_${parentId}`);
     }
-    handleMessage(client, payload) {
+    handleMessage() {
         return 'Hello world!';
     }
 };
@@ -41,7 +41,7 @@ __decorate([
 __decorate([
     (0, websockets_1.SubscribeMessage)('message'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", String)
 ], EventsGateway.prototype, "handleMessage", null);
 exports.EventsGateway = EventsGateway = EventsGateway_1 = __decorate([

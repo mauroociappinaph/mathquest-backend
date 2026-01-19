@@ -20,7 +20,10 @@ export class SupabaseAuthGuard implements CanActivate {
       throw new UnauthorizedException('Token no proporcionado');
     }
 
-    const { data: { user }, error } = await this.supabaseService.getClient().auth.getUser(token);
+    const {
+      data: { user },
+      error,
+    } = await this.supabaseService.getClient().auth.getUser(token);
 
     if (error || !user) {
       throw new UnauthorizedException('Token inválido o expirado');

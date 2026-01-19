@@ -10,9 +10,15 @@ import { SupabaseModule } from '../supabase/supabase.module';
 import { ProgressService } from './progress.service';
 
 @Module({
-  imports: [AiModule, AudioModule, EventsModule, ProfilesModule, SupabaseModule],
+  imports: [
+    AiModule,
+    AudioModule,
+    EventsModule,
+    ProfilesModule,
+    SupabaseModule,
+  ],
   controllers: [GameController],
   providers: [GameService, ProgressService],
-  exports: [GameService, ProgressService]
+  exports: [GameService, ProgressService],
 })
 export class GameModule {}

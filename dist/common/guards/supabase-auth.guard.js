@@ -23,7 +23,7 @@ let SupabaseAuthGuard = class SupabaseAuthGuard {
         if (!token) {
             throw new common_1.UnauthorizedException('Token no proporcionado');
         }
-        const { data: { user }, error } = await this.supabaseService.getClient().auth.getUser(token);
+        const { data: { user }, error, } = await this.supabaseService.getClient().auth.getUser(token);
         if (error || !user) {
             throw new common_1.UnauthorizedException('Token inválido o expirado');
         }

@@ -6,6 +6,6 @@ export declare class EventsGateway implements OnGatewayConnection, OnGatewayDisc
     handleConnection(client: Socket): void;
     handleDisconnect(client: Socket): void;
     emitProgressUpdate(parentId: string, data: any): void;
-    joinRoom(client: Socket, parentId: string): void;
-    handleMessage(client: any, payload: any): string;
+    joinRoom(client: Socket, parentId: string): Promise<void>;
+    handleMessage(): string;
 }

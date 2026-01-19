@@ -52,7 +52,9 @@ let AiService = AiService_1 = class AiService {
                 return (response.choices[0]?.message?.content?.trim() ||
                     (isCorrect ? '¡Excelente trabajo!' : '¡Sigue practicando!'));
             }
-            return isCorrect ? '¡Excelente trabajo! ¡Sigue así!' : '¡Casi lo logras! ¡Sigue practicando!';
+            return isCorrect
+                ? '¡Excelente trabajo! ¡Sigue así!'
+                : '¡Casi lo logras! ¡Sigue practicando!';
         }
         catch (error) {
             this.logger.error('Error al generar feedback con OpenRouter', error);

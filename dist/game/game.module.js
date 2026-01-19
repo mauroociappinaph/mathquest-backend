@@ -21,10 +21,16 @@ let GameModule = class GameModule {
 exports.GameModule = GameModule;
 exports.GameModule = GameModule = __decorate([
     (0, common_1.Module)({
-        imports: [ai_module_1.AiModule, audio_module_1.AudioModule, events_module_1.EventsModule, profiles_module_1.ProfilesModule, supabase_module_1.SupabaseModule],
+        imports: [
+            ai_module_1.AiModule,
+            audio_module_1.AudioModule,
+            events_module_1.EventsModule,
+            profiles_module_1.ProfilesModule,
+            supabase_module_1.SupabaseModule,
+        ],
         controllers: [game_controller_1.GameController],
         providers: [game_service_1.GameService, progress_service_1.ProgressService],
-        exports: [game_service_1.GameService, progress_service_1.ProgressService]
+        exports: [game_service_1.GameService, progress_service_1.ProgressService],
     })
 ], GameModule);
 //# sourceMappingURL=game.module.js.map

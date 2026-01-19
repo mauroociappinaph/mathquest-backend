@@ -5,5 +5,5 @@ export declare class SupabaseService {
     private supabaseClient;
     private readonly logger;
     constructor(configService: ConfigService);
-    getClient(): SupabaseClient<any, "public", "public", any, any>;
+    getClient(): SupabaseClient<any, any, any, any, any>;
 }

@@ -8,8 +8,7 @@ import { BadRequestException } from '@nestjs/common';
 
 describe('GameService', () => {
   let service: GameService;
-  let supabaseService: any;
-  let progressService: any;
+  let progressService: jest.Mocked<ProgressService>;
 
   const mockSupabaseClient = {
     from: jest.fn().mockReturnThis(),
@@ -28,11 +27,15 @@ describe('GameService', () => {
         },
         {
           provide: AI_PROVIDER,
-          useValue: { generateFeedback: jest.fn().mockResolvedValue('Buen trabajo') },
+          useValue: {
+            generateFeedback: jest.fn().mockResolvedValue('Buen trabajo'),
+          },
         },
         {
           provide: AUDIO_PROVIDER,
-          useValue: { generateSpeech: jest.fn().mockResolvedValue(Buffer.from('audio')) },
+          useValue: {
+            generateSpeech: jest.fn().mockResolvedValue(Buffer.from('audio')),
+          },
         },
         {
           provide: ProgressService,
@@ -42,8 +45,7 @@ describe('GameService', () => {
     }).compile();
 
     service = module.get<GameService>(GameService);
-    supabaseService = module.get<SupabaseService>(SupabaseService);
-    progressService = module.get<ProgressService>(ProgressService);
+    progressService = module.get(ProgressService);
   });
 
   it('should be defined', () => {
@@ -55,22 +57,34 @@ describe('GameService', () => {
 
     mockSupabaseClient.single.mockResolvedValueOnce({
       data: { full_name: 'Niño', parent_id: 'parent_abc' },
-      error: null
+      error: null,
     });
 
     const result = await service.submitAnswer(dto);
 
     expect(result.isCorrect).toBe(true);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(progressService.updateProgress).toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(progressService.recordSession).toHaveBeenCalledWith('123', true);
   });
 
   it('should throw error if child not found', async () => {
-    const dto = { child_id: 'non-existent', table: 5, multiplicator: 5, answer: 25 };
+    const dto = {
+      child_id: 'non-existent',
+      table: 5,
+      multiplicator: 5,
+      answer: 25,
+    };
 
-    mockSupabaseClient.single.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } });
+    mockSupabaseClient.single.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'Not found' },
+    });
 
-    await expect(service.submitAnswer(dto)).rejects.toThrow(BadRequestException);
+    await expect(service.submitAnswer(dto)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('should process an incorrect answer', async () => {
@@ -78,13 +92,15 @@ describe('GameService', () => {
 
     mockSupabaseClient.single.mockResolvedValueOnce({
       data: { full_name: 'Niño', parent_id: 'parent_abc' },
-      error: null
+      error: null,
     });
 
     const result = await service.submitAnswer(dto);
 
     expect(result.isCorrect).toBe(false);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(progressService.updateProgress).not.toHaveBeenCalled();
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(progressService.recordSession).toHaveBeenCalledWith('123', false);
   });
 });

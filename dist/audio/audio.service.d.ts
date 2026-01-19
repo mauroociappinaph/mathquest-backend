@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
-export declare class AudioService {
+import { AudioProvider } from './interfaces/audio-provider.interface';
+export declare class AudioService implements AudioProvider {
     private configService;
     private readonly logger;
     private readonly baseUrl;

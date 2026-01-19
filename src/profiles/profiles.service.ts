@@ -1,14 +1,18 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { BaseSupabaseService } from '../supabase/base-supabase.service';
 import { SupabaseService } from '../supabase/supabase.service';
-import { CreateChildProfileDto } from './dto/create-child-profile.dto';
+import { CreateChildProfileDto } from './dto';
 
 @Injectable()
-export class ProfilesService {
-  constructor(private supabaseService: SupabaseService) {}
+export class ProfilesService extends BaseSupabaseService {
+  protected readonly logger = new Logger(ProfilesService.name);
+
+  constructor(supabaseService: SupabaseService) {
+    super(supabaseService);
+  }
 
   async getParentProfile(userId: string) {
-    const { data, error } = await this.supabaseService
-      .getClient()
+    const { data, error } = await this.client
       .from('profiles')
       .select('*')
       .eq('uid', userId)
@@ -22,8 +26,7 @@ export class ProfilesService {
     // Primero obtenemos el ID interno del perfil del padre
     const parentProfile = await this.getParentProfile(parentUid);
 
-    const { data, error } = await this.supabaseService
-      .getClient()
+    const { data, error } = await this.client
       .from('profiles')
       .insert({
         full_name: createChildDto.full_name,
@@ -41,8 +44,7 @@ export class ProfilesService {
   async getChildren(parentUid: string) {
     const parentProfile = await this.getParentProfile(parentUid);
 
-    const { data, error } = await this.supabaseService
-      .getClient()
+    const { data, error } = await this.client
       .from('profiles')
       .select('*')
       .eq('parent_id', parentProfile.id)

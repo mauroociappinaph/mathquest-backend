@@ -2,8 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 
+import { AudioProvider } from './interfaces/audio-provider.interface';
+
 @Injectable()
-export class AudioService {
+export class AudioService implements AudioProvider {
   private readonly logger = new Logger(AudioService.name);
   private readonly baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech';
 

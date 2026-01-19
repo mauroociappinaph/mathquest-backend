@@ -7,9 +7,12 @@ import { EventsModule } from '../events/events.module';
 import { ProfilesModule } from '../profiles/profiles.module';
 import { SupabaseModule } from '../supabase/supabase.module';
 
+import { ProgressService } from './progress.service';
+
 @Module({
   imports: [AiModule, AudioModule, EventsModule, ProfilesModule, SupabaseModule],
   controllers: [GameController],
-  providers: [GameService]
+  providers: [GameService, ProgressService],
+  exports: [GameService, ProgressService]
 })
 export class GameModule {}

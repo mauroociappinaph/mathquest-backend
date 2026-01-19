@@ -10,13 +10,16 @@ exports.ProfilesModule = void 0;
 const common_1 = require("@nestjs/common");
 const profiles_controller_1 = require("./profiles.controller");
 const profiles_service_1 = require("./profiles.service");
+const supabase_module_1 = require("../supabase/supabase.module");
 let ProfilesModule = class ProfilesModule {
 };
 exports.ProfilesModule = ProfilesModule;
 exports.ProfilesModule = ProfilesModule = __decorate([
     (0, common_1.Module)({
+        imports: [supabase_module_1.SupabaseModule],
         controllers: [profiles_controller_1.ProfilesController],
-        providers: [profiles_service_1.ProfilesService]
+        providers: [profiles_service_1.ProfilesService],
+        exports: [profiles_service_1.ProfilesService]
     })
 ], ProfilesModule);
 //# sourceMappingURL=profiles.module.js.map

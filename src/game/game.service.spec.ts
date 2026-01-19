@@ -1,25 +1,21 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GameService } from './game.service';
 import { SupabaseService } from '../supabase/supabase.service';
-import { AiService } from '../ai/ai.service';
-import { AudioService } from '../audio/audio.service';
-import { EventsGateway } from '../events/events.gateway';
+import { AI_PROVIDER } from '../ai/interfaces/ai-provider.interface';
+import { AUDIO_PROVIDER } from '../audio/interfaces/audio-provider.interface';
+import { ProgressService } from './progress.service';
 import { BadRequestException } from '@nestjs/common';
 
 describe('GameService', () => {
   let service: GameService;
   let supabaseService: any;
-  let aiService: any;
-  let audioService: any;
-  let eventsGateway: any;
+  let progressService: any;
 
   const mockSupabaseClient = {
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     single: jest.fn(),
-    insert: jest.fn().mockResolvedValue({ error: null }),
-    rpc: jest.fn().mockResolvedValue({ error: null }),
   };
 
   beforeEach(async () => {
@@ -31,62 +27,64 @@ describe('GameService', () => {
           useValue: { getClient: () => mockSupabaseClient },
         },
         {
-          provide: AiService,
+          provide: AI_PROVIDER,
           useValue: { generateFeedback: jest.fn().mockResolvedValue('Buen trabajo') },
         },
         {
-          provide: AudioService,
+          provide: AUDIO_PROVIDER,
           useValue: { generateSpeech: jest.fn().mockResolvedValue(Buffer.from('audio')) },
         },
         {
-          provide: EventsGateway,
-          useValue: { emitProgressUpdate: jest.fn() },
+          provide: ProgressService,
+          useValue: { updateProgress: jest.fn(), recordSession: jest.fn() },
         },
       ],
     }).compile();
 
     service = module.get<GameService>(GameService);
     supabaseService = module.get<SupabaseService>(SupabaseService);
-    aiService = module.get<AiService>(AiService);
-    audioService = module.get<AudioService>(AudioService);
-    eventsGateway = module.get<EventsGateway>(EventsGateway);
+    progressService = module.get<ProgressService>(ProgressService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should submit an answer and return feedback', async () => {
-    mockSupabaseClient.single.mockResolvedValueOnce({
-      data: { full_name: 'Mauro', parent_id: 'parent-123' },
-      error: null
-    }); // Profile
-    mockSupabaseClient.single.mockResolvedValueOnce({
-      data: { id: 'table-1' },
-      error: null
-    }); // Table
+  it('should process a correct answer', async () => {
+    const dto = { child_id: '123', table: 5, multiplicator: 5, answer: 25 };
 
-    const result = await service.submitAnswer({
-      child_id: 'child-123',
-      table: 2,
-      multiplicator: 2,
-      answer: 4,
+    mockSupabaseClient.single.mockResolvedValueOnce({
+      data: { full_name: 'Niño', parent_id: 'parent_abc' },
+      error: null
     });
 
+    const result = await service.submitAnswer(dto);
+
     expect(result.isCorrect).toBe(true);
-    expect(result.feedback.text).toBe('Buen trabajo');
-    expect(result.feedback.audio).toBeDefined();
-    expect(eventsGateway.emitProgressUpdate).toHaveBeenCalled();
+    expect(progressService.updateProgress).toHaveBeenCalled();
+    expect(progressService.recordSession).toHaveBeenCalledWith('123', true);
   });
 
-  it('should throw error if child is not found', async () => {
+  it('should throw error if child not found', async () => {
+    const dto = { child_id: 'non-existent', table: 5, multiplicator: 5, answer: 25 };
+
     mockSupabaseClient.single.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } });
 
-    await expect(service.submitAnswer({
-      child_id: 'none',
-      table: 2,
-      multiplicator: 2,
-      answer: 4,
-    })).rejects.toThrow(BadRequestException);
+    await expect(service.submitAnswer(dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should process an incorrect answer', async () => {
+    const dto = { child_id: '123', table: 5, multiplicator: 5, answer: 30 }; // 5x5 is 25, so 30 is wrong
+
+    mockSupabaseClient.single.mockResolvedValueOnce({
+      data: { full_name: 'Niño', parent_id: 'parent_abc' },
+      error: null
+    });
+
+    const result = await service.submitAnswer(dto);
+
+    expect(result.isCorrect).toBe(false);
+    expect(progressService.updateProgress).not.toHaveBeenCalled();
+    expect(progressService.recordSession).toHaveBeenCalledWith('123', false);
   });
 });

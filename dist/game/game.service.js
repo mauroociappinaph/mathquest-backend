@@ -8,23 +8,26 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameService = void 0;
 const common_1 = require("@nestjs/common");
 const supabase_service_1 = require("../supabase/supabase.service");
-const ai_service_1 = require("../ai/ai.service");
-const audio_service_1 = require("../audio/audio.service");
-const events_gateway_1 = require("../events/events.gateway");
+const ai_provider_interface_1 = require("../ai/interfaces/ai-provider.interface");
+const audio_provider_interface_1 = require("../audio/interfaces/audio-provider.interface");
+const progress_service_1 = require("./progress.service");
 let GameService = class GameService {
     supabaseService;
-    aiService;
-    audioService;
-    eventsGateway;
-    constructor(supabaseService, aiService, audioService, eventsGateway) {
+    aiProvider;
+    audioProvider;
+    progressService;
+    constructor(supabaseService, aiProvider, audioProvider, progressService) {
         this.supabaseService = supabaseService;
-        this.aiService = aiService;
-        this.audioService = audioService;
-        this.eventsGateway = eventsGateway;
+        this.aiProvider = aiProvider;
+        this.audioProvider = audioProvider;
+        this.progressService = progressService;
     }
     async submitAnswer(submitAnswerDto) {
         const { child_id, table, multiplicator, answer } = submitAnswerDto;
@@ -37,36 +40,13 @@ let GameService = class GameService {
             .single();
         if (childError)
             throw new common_1.BadRequestException('Niño no encontrado');
-        const feedbackText = await this.aiService.generateFeedback(child.full_name, isCorrect, table, multiplicator, answer);
-        const audioBuffer = await this.audioService.generateSpeech(feedbackText);
+        const feedbackText = await this.aiProvider.generateFeedback(child.full_name, isCorrect, table, multiplicator, answer);
+        const audioBuffer = await this.audioProvider.generateSpeech(feedbackText);
         const audioBase64 = audioBuffer.toString('base64');
         if (isCorrect) {
-            const { data: tableData } = await this.supabaseService
-                .getClient()
-                .from('multiplication_tables')
-                .select('id')
-                .eq('number', table)
-                .single();
-            if (tableData) {
-                await this.supabaseService.getClient().rpc('increment_progress', {
-                    p_child_id: child_id,
-                    p_table_id: tableData.id,
-                });
-                this.eventsGateway.emitProgressUpdate(child.parent_id, {
-                    childName: child.full_name,
-                    table,
-                    multiplicator,
-                    timestamp: new Date(),
-                });
-            }
+            await this.progressService.updateProgress(child_id, table, multiplicator, child.full_name, child.parent_id);
         }
-        await this.supabaseService.getClient().from('game_sessions').insert({
-            child_id,
-            score: isCorrect ? 10 : 0,
-            duration: 10,
-            correct_answers: isCorrect ? 1 : 0,
-            wrong_answers: isCorrect ? 0 : 1,
-        });
+        await this.progressService.recordSession(child_id, isCorrect);
         return {
             isCorrect,
             correctAnswer: table * multiplicator,
@@ -80,9 +60,8 @@ let GameService = class GameService {
 exports.GameService = GameService;
 exports.GameService = GameService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [supabase_service_1.SupabaseService,
-        ai_service_1.AiService,
-        audio_service_1.AudioService,
-        events_gateway_1.EventsGateway])
+    __param(1, (0, common_1.Inject)(ai_provider_interface_1.AI_PROVIDER)),
+    __param(2, (0, common_1.Inject)(audio_provider_interface_1.AUDIO_PROVIDER)),
+    __metadata("design:paramtypes", [supabase_service_1.SupabaseService, Object, Object, progress_service_1.ProgressService])
 ], GameService);
 //# sourceMappingURL=game.service.js.map

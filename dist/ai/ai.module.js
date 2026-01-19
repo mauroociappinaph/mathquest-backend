@@ -9,13 +9,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AiModule = void 0;
 const common_1 = require("@nestjs/common");
 const ai_service_1 = require("./ai.service");
+const ai_provider_interface_1 = require("./interfaces/ai-provider.interface");
 let AiModule = class AiModule {
 };
 exports.AiModule = AiModule;
 exports.AiModule = AiModule = __decorate([
     (0, common_1.Module)({
-        providers: [ai_service_1.AiService],
-        exports: [ai_service_1.AiService],
+        providers: [
+            {
+                provide: ai_provider_interface_1.AI_PROVIDER,
+                useClass: ai_service_1.AiService,
+            },
+        ],
+        exports: [ai_provider_interface_1.AI_PROVIDER],
     })
 ], AiModule);
 //# sourceMappingURL=ai.module.js.map

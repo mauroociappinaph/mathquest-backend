@@ -9,12 +9,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioModule = void 0;
 const common_1 = require("@nestjs/common");
 const audio_service_1 = require("./audio.service");
+const audio_provider_interface_1 = require("./interfaces/audio-provider.interface");
 let AudioModule = class AudioModule {
 };
 exports.AudioModule = AudioModule;
 exports.AudioModule = AudioModule = __decorate([
     (0, common_1.Module)({
-        providers: [audio_service_1.AudioService]
+        providers: [
+            {
+                provide: audio_provider_interface_1.AUDIO_PROVIDER,
+                useClass: audio_service_1.AudioService,
+            },
+        ],
+        exports: [audio_provider_interface_1.AUDIO_PROVIDER],
     })
 ], AudioModule);
 //# sourceMappingURL=audio.module.js.map

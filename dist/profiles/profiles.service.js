@@ -8,18 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var ProfilesService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProfilesService = void 0;
 const common_1 = require("@nestjs/common");
+const base_supabase_service_1 = require("../supabase/base-supabase.service");
 const supabase_service_1 = require("../supabase/supabase.service");
-let ProfilesService = class ProfilesService {
-    supabaseService;
+let ProfilesService = ProfilesService_1 = class ProfilesService extends base_supabase_service_1.BaseSupabaseService {
+    logger = new common_1.Logger(ProfilesService_1.name);
     constructor(supabaseService) {
-        this.supabaseService = supabaseService;
+        super(supabaseService);
     }
     async getParentProfile(userId) {
-        const { data, error } = await this.supabaseService
-            .getClient()
+        const { data, error } = await this.client
             .from('profiles')
             .select('*')
             .eq('uid', userId)
@@ -30,8 +31,7 @@ let ProfilesService = class ProfilesService {
     }
     async createChild(parentUid, createChildDto) {
         const parentProfile = await this.getParentProfile(parentUid);
-        const { data, error } = await this.supabaseService
-            .getClient()
+        const { data, error } = await this.client
             .from('profiles')
             .insert({
             full_name: createChildDto.full_name,
@@ -47,8 +47,7 @@ let ProfilesService = class ProfilesService {
     }
     async getChildren(parentUid) {
         const parentProfile = await this.getParentProfile(parentUid);
-        const { data, error } = await this.supabaseService
-            .getClient()
+        const { data, error } = await this.client
             .from('profiles')
             .select('*')
             .eq('parent_id', parentProfile.id)
@@ -59,7 +58,7 @@ let ProfilesService = class ProfilesService {
     }
 };
 exports.ProfilesService = ProfilesService;
-exports.ProfilesService = ProfilesService = __decorate([
+exports.ProfilesService = ProfilesService = ProfilesService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [supabase_service_1.SupabaseService])
 ], ProfilesService);

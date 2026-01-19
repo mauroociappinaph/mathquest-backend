@@ -1,17 +1,17 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
-import { AiService } from '../ai/ai.service';
-import { AudioService } from '../audio/audio.service';
-import { EventsGateway } from '../events/events.gateway';
-import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { AI_PROVIDER, AiProvider } from '../ai/interfaces/ai-provider.interface';
+import { AUDIO_PROVIDER, AudioProvider } from '../audio/interfaces/audio-provider.interface';
+import { ProgressService } from './progress.service';
+import { SubmitAnswerDto } from './dto';
 
 @Injectable()
 export class GameService {
   constructor(
     private supabaseService: SupabaseService,
-    private aiService: AiService,
-    private audioService: AudioService,
-    private eventsGateway: EventsGateway,
+    @Inject(AI_PROVIDER) private aiProvider: AiProvider,
+    @Inject(AUDIO_PROVIDER) private audioProvider: AudioProvider,
+    private progressService: ProgressService,
   ) {}
 
   async submitAnswer(submitAnswerDto: SubmitAnswerDto) {
@@ -29,7 +29,7 @@ export class GameService {
     if (childError) throw new BadRequestException('Niño no encontrado');
 
     // 2. Generar Feedback de IA
-    const feedbackText = await this.aiService.generateFeedback(
+    const feedbackText = await this.aiProvider.generateFeedback(
       child.full_name,
       isCorrect,
       table,
@@ -37,43 +37,22 @@ export class GameService {
       answer,
     );
 
-    // 3. Generar Audio Feedback (Opcional, no bloqueante para la respuesta rápida)
-    const audioBuffer = await this.audioService.generateSpeech(feedbackText);
+    // 3. Generar Audio Feedback
+    const audioBuffer = await this.audioProvider.generateSpeech(feedbackText);
     const audioBase64 = audioBuffer.toString('base64');
 
-    // 4. Actualizar Progreso en DB
+    // 4. Actualizar Progreso y Registrar Sesión (SRP)
     if (isCorrect) {
-      const { data: tableData } = await this.supabaseService
-        .getClient()
-        .from('multiplication_tables')
-        .select('id')
-        .eq('number', table)
-        .single();
-
-      if (tableData) {
-        await this.supabaseService.getClient().rpc('increment_progress', {
-          p_child_id: child_id,
-          p_table_id: tableData.id,
-        });
-
-        // Notificar al padre vía WebSockets
-        this.eventsGateway.emitProgressUpdate(child.parent_id, {
-          childName: child.full_name,
-          table,
-          multiplicator,
-          timestamp: new Date(),
-        });
-      }
+      await this.progressService.updateProgress(
+        child_id,
+        table,
+        multiplicator,
+        child.full_name,
+        child.parent_id,
+      );
     }
 
-    // 5. Registrar en historial de sesión
-    await this.supabaseService.getClient().from('game_sessions').insert({
-      child_id,
-      score: isCorrect ? 10 : 0,
-      duration: 10,
-      correct_answers: isCorrect ? 1 : 0,
-      wrong_answers: isCorrect ? 0 : 1,
-    });
+    await this.progressService.recordSession(child_id, isCorrect);
 
     return {
       isCorrect,

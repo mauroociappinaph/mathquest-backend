@@ -1,14 +1,14 @@
 import { SupabaseService } from '../supabase/supabase.service';
-import { AiService } from '../ai/ai.service';
-import { AudioService } from '../audio/audio.service';
-import { EventsGateway } from '../events/events.gateway';
-import { SubmitAnswerDto } from './dto/submit-answer.dto';
+import { AiProvider } from '../ai/interfaces/ai-provider.interface';
+import { AudioProvider } from '../audio/interfaces/audio-provider.interface';
+import { ProgressService } from './progress.service';
+import { SubmitAnswerDto } from './dto';
 export declare class GameService {
     private supabaseService;
-    private aiService;
-    private audioService;
-    private eventsGateway;
-    constructor(supabaseService: SupabaseService, aiService: AiService, audioService: AudioService, eventsGateway: EventsGateway);
+    private aiProvider;
+    private audioProvider;
+    private progressService;
+    constructor(supabaseService: SupabaseService, aiProvider: AiProvider, audioProvider: AudioProvider, progressService: ProgressService);
     submitAnswer(submitAnswerDto: SubmitAnswerDto): Promise<{
         isCorrect: boolean;
         correctAnswer: number;

@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
-export declare class AiService {
+import { AiProvider } from './interfaces/ai-provider.interface';
+export declare class AiService implements AiProvider {
     private configService;
     private openai;
     private readonly logger;

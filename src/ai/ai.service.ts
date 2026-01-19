@@ -2,8 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
+import { AiProvider } from './interfaces/ai-provider.interface';
+
 @Injectable()
-export class AiService {
+export class AiService implements AiProvider {
   private openai: OpenAI;
   private readonly logger = new Logger(AiService.name);
   private readonly defaultModel = 'mistralai/mistral-nemo';

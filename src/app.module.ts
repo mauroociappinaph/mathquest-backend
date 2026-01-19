@@ -3,12 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { SupabaseModule } from './supabase/supabase.module';
-import { SupabaseService } from './supabase/supabase.service';
 import { ProfilesModule } from './profiles/profiles.module';
 import { GameModule } from './game/game.module';
-import { AiService } from './ai/ai.service';
 import { AudioModule } from './audio/audio.module';
-import { EventsGateway } from './events/events.gateway';
+import { AiModule } from './ai/ai.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -17,8 +16,10 @@ import { EventsGateway } from './events/events.gateway';
     ProfilesModule,
     GameModule,
     AudioModule,
+    AiModule,
+    EventsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AiService, EventsGateway],
+  providers: [AppService],
 })
 export class AppModule {}

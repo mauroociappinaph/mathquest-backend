@@ -13,6 +13,10 @@ const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const supabase_module_1 = require("./supabase/supabase.module");
 const profiles_module_1 = require("./profiles/profiles.module");
+const game_module_1 = require("./game/game.module");
+const audio_module_1 = require("./audio/audio.module");
+const ai_module_1 = require("./ai/ai.module");
+const events_module_1 = require("./events/events.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -22,6 +26,10 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             supabase_module_1.SupabaseModule,
             profiles_module_1.ProfilesModule,
+            game_module_1.GameModule,
+            audio_module_1.AudioModule,
+            ai_module_1.AiModule,
+            events_module_1.EventsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],

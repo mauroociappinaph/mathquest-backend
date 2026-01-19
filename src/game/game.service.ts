@@ -1,6 +1,8 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 import { AiService } from '../ai/ai.service';
+import { AudioService } from '../audio/audio.service';
+import { EventsGateway } from '../events/events.gateway';
 import { SubmitAnswerDto } from './dto/submit-answer.dto';
 
 @Injectable()
@@ -8,24 +10,26 @@ export class GameService {
   constructor(
     private supabaseService: SupabaseService,
     private aiService: AiService,
+    private audioService: AudioService,
+    private eventsGateway: EventsGateway,
   ) {}
 
   async submitAnswer(submitAnswerDto: SubmitAnswerDto) {
     const { child_id, table, multiplicator, answer } = submitAnswerDto;
     const isCorrect = answer === table * multiplicator;
 
-    // 1. Obtener nombre del niño para la IA
+    // 1. Obtener datos del niño y padre
     const { data: child, error: childError } = await this.supabaseService
       .getClient()
       .from('profiles')
-      .select('full_name')
+      .select('full_name, parent_id')
       .eq('id', child_id)
       .single();
 
     if (childError) throw new BadRequestException('Niño no encontrado');
 
     // 2. Generar Feedback de IA
-    const feedback = await this.aiService.generateFeedback(
+    const feedbackText = await this.aiService.generateFeedback(
       child.full_name,
       isCorrect,
       table,
@@ -33,9 +37,12 @@ export class GameService {
       answer,
     );
 
-    // 3. Actualizar Progreso en DB
+    // 3. Generar Audio Feedback (Opcional, no bloqueante para la respuesta rápida)
+    const audioBuffer = await this.audioService.generateSpeech(feedbackText);
+    const audioBase64 = audioBuffer.toString('base64');
+
+    // 4. Actualizar Progreso en DB
     if (isCorrect) {
-      // Intentar actualizar o insertar progreso de la tabla
       const { data: tableData } = await this.supabaseService
         .getClient()
         .from('multiplication_tables')
@@ -48,14 +55,22 @@ export class GameService {
           p_child_id: child_id,
           p_table_id: tableData.id,
         });
+
+        // Notificar al padre vía WebSockets
+        this.eventsGateway.emitProgressUpdate(child.parent_id, {
+          childName: child.full_name,
+          table,
+          multiplicator,
+          timestamp: new Date(),
+        });
       }
     }
 
-    // 4. Registrar en historial de sesión (Game Session)
+    // 5. Registrar en historial de sesión
     await this.supabaseService.getClient().from('game_sessions').insert({
       child_id,
       score: isCorrect ? 10 : 0,
-      duration: 10, // Simulado por ahora
+      duration: 10,
       correct_answers: isCorrect ? 1 : 0,
       wrong_answers: isCorrect ? 0 : 1,
     });
@@ -63,7 +78,10 @@ export class GameService {
     return {
       isCorrect,
       correctAnswer: table * multiplicator,
-      feedback,
+      feedback: {
+        text: feedbackText,
+        audio: audioBase64,
+      },
     };
   }
 }
